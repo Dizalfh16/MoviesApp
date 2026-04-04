@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import GlobalApi from "../Services/GlobalApi";
 import IMAGE_BASE_URL from "../Constant";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
@@ -6,6 +7,7 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 function Slider() {
   const [movieList, setMovieList] = useState([]);
   const sliderRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getTrendingMovies();
@@ -43,6 +45,7 @@ function Slider() {
             key={index}
             src={IMAGE_BASE_URL + item.backdrop_path}
             alt={item.title || item.name}
+            onClick={() => navigate(`/movie/${item.id}`)}
             className="min-w-[90%] md:min-w-[80%] rounded-lg cursor-pointer
               hover:border-[3px] border-gray-400
               transition-all duration-300 hover:scale-[1.02]

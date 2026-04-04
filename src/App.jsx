@@ -1,18 +1,19 @@
 import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header";
-import Slider from "./components/Slider";
-import ProductionHouse from "./components/ProductionHouse";
-import GenreMovieList from "./components/GenreMovieList";
+import Home from "./pages/Home";
+import MovieDetail from "./pages/MovieDetail";
 
 function App() {
   return (
-    <div>
+    <BrowserRouter>
       <Header />
-      <Slider />
-      <ProductionHouse />
-      <GenreMovieList />
-    </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/movie/:id" element={<MovieDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

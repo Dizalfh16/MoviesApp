@@ -17,4 +17,16 @@ const getTrendingMovies = api.get("/trending/all/day");
 const getMovieByGenreId = (id) =>
   api.get(`/discover/movie`, { params: { with_genres: id } });
 
-export default { getTrendingMovies, getMovieByGenreId };
+const getMovieDetails = (id) => api.get(`/movie/${id}`);
+const getMovieCredits = (id) => api.get(`/movie/${id}/credits`);
+const getSimilarMovies = (id) => api.get(`/movie/${id}/similar`);
+const getMovieVideos = (id) => api.get(`/movie/${id}/videos`);
+
+export default {
+  getTrendingMovies,
+  getMovieByGenreId,
+  getMovieDetails,
+  getMovieCredits,
+  getSimilarMovies,
+  getMovieVideos,
+};

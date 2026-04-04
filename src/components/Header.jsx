@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   HiTv,
   HiPlayCircle,
@@ -12,6 +13,7 @@ import HeaderItem from "./HeaderItem";
 
 function Header() {
   const [toggle, setToggle] = useState(false);
+  const navigate = useNavigate();
   const menu = [
     {
       name: "HOME",
@@ -42,7 +44,7 @@ function Header() {
   return (
     <div className="bg-black flex items-center justify-between gap-8 p-4 z-[10]">
       <div className="flex items-center gap-8">
-        <img src={Disney} className="w-[80px] md:w-[115px] object-cover cursor-pointer" />
+        <img src={Disney} className="w-[80px] md:w-[115px] object-cover cursor-pointer" onClick={() => navigate("/")} />
         
         {/* Menu Desktop */}
         <div className="hidden md:flex gap-8">

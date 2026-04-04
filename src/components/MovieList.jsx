@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import GlobalApi from "../Services/GlobalApi";
 import IMAGE_BASE_URL from "../Constant";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
@@ -6,6 +7,7 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 function MovieList({ genreId, index_ }) {
   const [movieList, setMovieList] = useState([]);
   const elementRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getMovieByGenreId();
@@ -41,6 +43,7 @@ function MovieList({ genreId, index_ }) {
             key={index}
             src={IMAGE_BASE_URL + (index_ % 3 === 0 ? item.backdrop_path : item.poster_path)}
             alt={item.title || item.name}
+            onClick={() => navigate(`/movie/${item.id}`)}
             className={`${
               index_ % 3 === 0
                 ? "min-w-[260px] md:min-w-[320px]"
