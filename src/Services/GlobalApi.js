@@ -22,6 +22,15 @@ const getMovieCredits = (id) => api.get(`/movie/${id}/credits`);
 const getSimilarMovies = (id) => api.get(`/movie/${id}/similar`);
 const getMovieVideos = (id) => api.get(`/movie/${id}/videos`);
 
+const searchMovies = (query) =>
+  api.get(`/search/multi`, { params: { query } });
+const getPopularMovies = (page = 1) =>
+  api.get(`/movie/popular`, { params: { page } });
+const getTvSeries = (page = 1) =>
+  api.get(`/tv/popular`, { params: { page } });
+const getTopRated = (page = 1) =>
+  api.get(`/movie/top_rated`, { params: { page } });
+
 export default {
   getTrendingMovies,
   getMovieByGenreId,
@@ -29,4 +38,9 @@ export default {
   getMovieCredits,
   getSimilarMovies,
   getMovieVideos,
+  searchMovies,
+  getPopularMovies,
+  getTvSeries,
+  getTopRated,
 };
+

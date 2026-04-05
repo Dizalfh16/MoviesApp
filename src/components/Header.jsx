@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   HiTv,
   HiPlayCircle,
@@ -14,49 +14,48 @@ import HeaderItem from "./HeaderItem";
 function Header() {
   const [toggle, setToggle] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
   const menu = [
-    {
-      name: "HOME",
-      icon: HiHome,
-    },
-    {
-      name: "SEARCH",
-      icon: HiMagnifyingGlass,
-    },
-    {
-      name: "WATCH LIST",
-      icon: HiPlus,
-    },
-    {
-      name: "ORIGINALS",
-      icon: HiStar,
-    },
-    {
-      name: "MOVIES",
-      icon: HiPlayCircle,
-    },
-    {
-      name: "SERIES",
-      icon: HiTv,
-    },
+    { name: "HOME", icon: HiHome, path: "/" },
+    { name: "SEARCH", icon: HiMagnifyingGlass, path: "/search" },
+    { name: "WATCH LIST", icon: HiPlus, path: "/watchlist" },
+    { name: "ORIGINALS", icon: HiStar, path: "/originals" },
+    { name: "MOVIES", icon: HiPlayCircle, path: "/movies" },
+    { name: "SERIES", icon: HiTv, path: "/series" },
   ];
 
   return (
-    <div className="bg-black flex items-center justify-between gap-8 p-4 z-[10]">
+    <div className="bg-black flex items-center justify-between gap-8 p-4 z-[10] sticky top-0">
       <div className="flex items-center gap-8">
         <img src={Disney} className="w-[80px] md:w-[115px] object-cover cursor-pointer" onClick={() => navigate("/")} />
         
         {/* Menu Desktop */}
         <div className="hidden md:flex gap-8">
           {menu.map((item, index) => (
-            <HeaderItem key={index} name={item.name} Icon={item.icon} />
+            <HeaderItem
+              key={index}
+              name={item.name}
+              Icon={item.icon}
+              isActive={location.pathname === item.path}
+              onClick={() => {
+                navigate(item.path);
+                setToggle(false);
+              }}
+            />
           ))}
         </div>
         
         {/* Menu Mobile */}
         <div className="flex md:hidden gap-5">
           {menu.map((item, index) => index < 3 && (
-            <HeaderItem key={index} name={""} Icon={item.icon} />
+            <HeaderItem
+              key={index}
+              name={""}
+              Icon={item.icon}
+              isActive={location.pathname === item.path}
+              onClick={() => navigate(item.path)}
+            />
           ))}
           
           <div className="md:hidden relative" onClick={() => setToggle(!toggle)}>
@@ -66,7 +65,16 @@ function Header() {
             {toggle ? (
               <div className="absolute mt-3 bg-[#121212] border-[1px] border-gray-700 p-3 px-5 py-4 z-[100] left-[-30px] rounded-md shadow-lg">
                 {menu.map((item, index) => index >= 3 && (
-                  <HeaderItem key={index} name={item.name} Icon={item.icon} />
+                  <HeaderItem
+                    key={index}
+                    name={item.name}
+                    Icon={item.icon}
+                    isActive={location.pathname === item.path}
+                    onClick={() => {
+                      navigate(item.path);
+                      setToggle(false);
+                    }}
+                  />
                 ))}
               </div>
             ) : null}

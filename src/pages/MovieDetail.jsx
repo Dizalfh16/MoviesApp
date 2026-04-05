@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import GlobalApi from "../Services/GlobalApi";
 import IMAGE_BASE_URL from "../Constant";
-import { HiArrowLeft, HiPlay, HiPlus, HiStar } from "react-icons/hi2";
+import { HiArrowLeft, HiPlay, HiPlus, HiStar, HiCheck } from "react-icons/hi2";
 
 function MovieDetail() {
   const { id } = useParams();
@@ -12,11 +12,35 @@ function MovieDetail() {
   const [similarMovies, setSimilarMovies] = useState([]);
   const [trailer, setTrailer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchMovieData();
+    checkWatchlist();
   }, [id]);
+
+  const checkWatchlist = () => {
+    const saved = JSON.parse(localStorage.getItem("watchlist") || "[]");
+    setIsInWatchlist(saved.some((item) => item.id === parseInt(id)));
+  };
+
+  const toggleWatchlist = () => {
+    const saved = JSON.parse(localStorage.getItem("watchlist") || "[]");
+    if (isInWatchlist) {
+      const updated = saved.filter((item) => item.id !== movie.id);
+      localStorage.setItem("watchlist", JSON.stringify(updated));
+      setIsInWatchlist(false);
+    } else {
+      saved.push({
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+      });
+      localStorage.setItem("watchlist", JSON.stringify(saved));
+      setIsInWatchlist(true);
+    }
+  };
 
   const fetchMovieData = async () => {
     setLoading(true);
@@ -153,9 +177,19 @@ function MovieDetail() {
                   Tonton Trailer
                 </a>
               )}
-              <button className="flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/30 rounded-lg hover:bg-white/20 transition-all duration-300 hover:scale-105 backdrop-blur-sm">
-                <HiPlus className="text-xl" />
-                Watchlist
+              <button
+                onClick={toggleWatchlist}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm
+                  ${isInWatchlist
+                    ? "bg-green-600/30 border border-green-500/50 text-green-400"
+                    : "bg-white/10 border border-white/30 hover:bg-white/20"
+                  }`}
+              >
+                {isInWatchlist ? (
+                  <><HiCheck className="text-xl" /> Ditambahkan</>
+                ) : (
+                  <><HiPlus className="text-xl" /> Watchlist</>
+                )}
               </button>
             </div>
 

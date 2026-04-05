@@ -4,6 +4,11 @@ import "./App.css";
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import MovieDetail from "./pages/MovieDetail";
+import Search from "./pages/Search";
+import Movies from "./pages/Movies";
+import Series from "./pages/Series";
+import Originals from "./pages/Originals";
+import WatchList from "./pages/WatchList";
 
 function App() {
   return (
@@ -12,6 +17,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/movie/:id" element={<MovieDetail />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/movies" element={<Movies />} />
+        <Route path="/series" element={<Series />} />
+        <Route path="/originals" element={<Originals />} />
+        <Route path="/watchlist" element={<WatchList />} />
       </Routes>
     </BrowserRouter>
   );
