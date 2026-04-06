@@ -82,9 +82,10 @@ function Header() {
         </div>
       </div>
       <img
-        src="https://i.pinimg.com/474x/db/3a/62/db3a623acc8396fb285ec899ad01cd10.jpg"
-        className="w-[40px] h-[40px] md:w-[50px] md:h-[50px] rounded-full object-cover cursor-pointer"
+        src={JSON.parse(localStorage.getItem("userProfile") || "{}").avatar || "https://i.pinimg.com/474x/db/3a/62/db3a623acc8396fb285ec899ad01cd10.jpg"}
+        className="w-[40px] h-[40px] md:w-[50px] md:h-[50px] rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-300"
         alt="Profile"
+        onClick={() => navigate("/profile")}
       />
     </div>
   );
