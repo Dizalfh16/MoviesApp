@@ -10,7 +10,7 @@ import Series from "./pages/Series";
 import Originals from "./pages/Originals";
 import WatchList from "./pages/WatchList";
 import Profile from "./pages/Profile";
-
+import StudioMovies from "./pages/StudioMovies";
 function App() {
   return (
     <BrowserRouter>
@@ -24,6 +24,7 @@ function App() {
         <Route path="/originals" element={<Originals />} />
         <Route path="/watchlist" element={<WatchList />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/studio/:id" element={<StudioMovies />} />
       </Routes>
     </BrowserRouter>
   );
