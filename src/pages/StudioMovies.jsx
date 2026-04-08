@@ -37,13 +37,13 @@ function StudioMovies() {
     <div className="min-h-screen bg-[#040714] pb-8">
       {/* Dynamic Header Banner */}
       <div className={`w-full h-[200px] md:h-[300px] bg-gradient-to-b ${currentStudio.bgGradient} to-[#040714] relative flex items-end px-5 md:px-16 pb-8`}>
-        <div className="absolute top-5 left-5 md:hidden" onClick={() => navigate(-1)}>
-            <HiChevronLeft className="text-white text-3xl cursor-pointer bg-black/40 rounded-full p-1" />
+        <div className="absolute top-6 left-5 md:hidden" onClick={() => navigate(-1)}>
+            <HiChevronLeft className="text-white text-3xl cursor-pointer bg-black/40 rounded-full p-1 backdrop-blur-sm border border-white/10" />
         </div>
         <div>
           <button 
             onClick={() => navigate(-1)}
-            className="hidden md:flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors"
+            className="hidden md:flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10"
           >
             <HiChevronLeft className="text-xl" /> Kembali
           </button>

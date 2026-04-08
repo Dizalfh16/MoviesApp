@@ -106,8 +106,8 @@ function MovieDetail() {
 
         {/* Back Button */}
         <button
-          onClick={() => navigate("/")}
-          className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full hover:bg-black/80 transition-all duration-300 backdrop-blur-sm"
+          onClick={() => navigate(-1)}
+          className="absolute top-6 left-6 md:left-16 z-20 flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full hover:bg-black/80 transition-all duration-300 backdrop-blur-sm border border-white/10"
         >
           <HiArrowLeft className="text-lg" />
           <span className="text-sm font-medium">Kembali</span>

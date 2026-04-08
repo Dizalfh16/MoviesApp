@@ -15,17 +15,19 @@ function App() {
   return (
     <BrowserRouter>
       <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/movie/:id" element={<MovieDetail />} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/movies" element={<Movies />} />
-        <Route path="/series" element={<Series />} />
-        <Route path="/originals" element={<Originals />} />
-        <Route path="/watchlist" element={<WatchList />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/studio/:id" element={<StudioMovies />} />
-      </Routes>
+      <div className="pt-[72px] md:pt-[84px]">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/movie/:id" element={<MovieDetail />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/movies" element={<Movies />} />
+          <Route path="/series" element={<Series />} />
+          <Route path="/originals" element={<Originals />} />
+          <Route path="/watchlist" element={<WatchList />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/studio/:id" element={<StudioMovies />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }
