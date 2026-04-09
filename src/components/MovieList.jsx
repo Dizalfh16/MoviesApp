@@ -64,16 +64,10 @@ function MovieList({ genreId, index_ }) {
         {movieList.map((item, index) => (
           <img
             key={index}
-            src={IMAGE_BASE_URL + (index_ % 3 === 0 ? item.backdrop_path : item.poster_path)}
+            src={IMAGE_BASE_URL + (item.poster_path || item.backdrop_path)}
             alt={item.title || item.name}
             onClick={() => navigate(`/movie/${item.id}`)}
-            className={`${
-              index_ % 3 === 0
-                ? "min-w-[260px] md:min-w-[320px]"
-                : "min-w-[110px] md:min-w-[180px]"
-            } rounded-lg hover:border-[3px] border-white/50 hover:border-white
-              cursor-pointer hover:scale-[1.05] md:hover:scale-[1.08] shadow-lg
-              transition-transform duration-300 ease-out`}
+            className="w-[130px] sm:w-[160px] md:w-[200px] aspect-[2/3] object-cover rounded-lg hover:border-[3px] border-white/50 hover:border-white cursor-pointer hover:scale-[1.05] md:hover:scale-[1.08] shadow-lg transition-transform duration-300 ease-out flex-shrink-0"
           />
         ))}
       </div>
