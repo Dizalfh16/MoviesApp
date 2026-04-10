@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import IMAGE_BASE_URL from "../Constant";
+import { useAuth } from "../components/AuthContext";
+import { supabase } from "../Services/supabaseClient";
 import {
   HiPencilSquare,
   HiCheck,
@@ -33,6 +35,7 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const { user } = useAuth();
 
   // User profile state
   const [profile, setProfile] = useState({
@@ -48,31 +51,29 @@ function Profile() {
 
   const nameInputRef = useRef(null);
 
-  // Load profile & watchlist from localStorage
+  // Protect route & Load data
   useEffect(() => {
-    const savedProfile = JSON.parse(localStorage.getItem("userProfile") || "null");
-    if (savedProfile) {
-      setProfile(savedProfile);
-    } else {
-      // First time - save default
-      const defaultProfile = {
-        name: "User",
-        bio: "Pecinta film dan serial 🎬",
-        avatar: DEFAULT_AVATAR,
-        joinDate: new Date().toISOString(),
-      };
-      localStorage.setItem("userProfile", JSON.stringify(defaultProfile));
+    if (!user) {
+      navigate('/login');
+      return;
     }
 
-    const savedWatchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
-    setWatchlist(savedWatchlist);
+    setProfile({
+      name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
+      bio: user.user_metadata?.bio || "Pecinta film dan serial 🎬",
+      avatar: user.user_metadata?.avatar_url || DEFAULT_AVATAR,
+      joinDate: user.created_at || new Date().toISOString(),
+    });
 
-    const savedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    setFavorites(savedFavorites);
+    const loadData = async () => {
+      const { data } = await supabase.from("watchlist").select("*").order("created_at", { ascending: false });
+      if (data) setWatchlist(data);
+    };
+    loadData();
 
     // Trigger entrance animation
     setTimeout(() => setAnimateIn(true), 50);
-  }, []);
+  }, [user, navigate]);
 
   // Start editing
   const startEditing = () => {
@@ -82,23 +83,31 @@ function Profile() {
   };
 
   // Save profile
-  const saveProfile = () => {
-    const updatedProfile = {
-      ...profile,
-      name: editForm.name.trim() || "User",
-      bio: editForm.bio.trim() || "Pecinta film dan serial 🎬",
-    };
-    setProfile(updatedProfile);
-    localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+  const saveProfile = async () => {
+    const newName = editForm.name.trim() || "User";
+    const newBio = editForm.bio.trim() || "Pecinta film dan serial 🎬";
+    
+    setProfile({ ...profile, name: newName, bio: newBio });
     setIsEditing(false);
+
+    await supabase.auth.updateUser({
+      data: { full_name: newName, bio: newBio }
+    });
   };
 
   // Change avatar
-  const changeAvatar = (url) => {
-    const updatedProfile = { ...profile, avatar: url };
-    setProfile(updatedProfile);
-    localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+  const changeAvatar = async (url) => {
+    setProfile({ ...profile, avatar: url });
     setShowAvatarPicker(false);
+    
+    await supabase.auth.updateUser({
+      data: { avatar_url: url }
+    });
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
   };
 
   // Format join date
@@ -367,7 +376,7 @@ function Profile() {
               {watchlist.slice(0, 8).map((item) => (
                 <div
                   key={item.id}
-                  onClick={() => navigate(`/movie/${item.id}`)}
+                  onClick={() => navigate(`/movie/${item.movie_id}`)}
                   className="flex-shrink-0 w-[120px] cursor-pointer group"
                 >
                   <img
@@ -392,7 +401,10 @@ function Profile() {
         }`}
       >
         <div className="max-w-3xl mx-auto">
-          <button className="w-full flex items-center justify-center gap-3 bg-red-600/10 border border-red-500/20 text-red-400 hover:bg-red-600/20 hover:text-red-300 py-3.5 rounded-2xl font-medium transition-all duration-300">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-3 bg-red-600/10 border border-red-500/20 text-red-400 hover:bg-red-600/20 hover:text-red-300 py-3.5 rounded-2xl font-medium transition-all duration-300"
+          >
             <HiArrowRightOnRectangle className="text-xl" />
             Keluar
           </button>

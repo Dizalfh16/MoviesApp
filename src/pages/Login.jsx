@@ -9,7 +9,14 @@ function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isEmailSent, setIsEmailSent] = useState(false);
   const navigate = useNavigate();
+
+  const FORBIDDEN_DOMAINS = [
+    "yopmail", "mailinator", "tempmail", "10minutemail",
+    "guerrillamail", "sharklasers", "throwawaymail", "temp-mail",
+    "maildrop", "getnada", "dispostable", "trashmail"
+  ];
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -17,6 +24,19 @@ function Login() {
     setErrorMsg("");
 
     try {
+      if (!isLogin) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+          throw new Error("Format email yang Anda masukkan tidak valid.");
+        }
+        
+        const domain = email.split('@')[1]?.toLowerCase() || "";
+        const isDisposable = FORBIDDEN_DOMAINS.some(d => domain.includes(d));
+        if (isDisposable) {
+          throw new Error("Pendaftaran ditolak! Harap gunakan email resmi (seperti Gmail, Yahoo, dsb). Email sementara/palsu diblokir dari sistem kami.");
+        }
+      }
+
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -35,8 +55,7 @@ function Login() {
         if (data.session) {
           navigate("/");
         } else {
-          alert("Pendaftaran berhasil! Silakan periksa kotak masuk email Anda untuk verifikasi.");
-          setIsLogin(true);
+          setIsEmailSent(true);
         }
       }
     } catch (error) {
@@ -62,7 +81,32 @@ function Login() {
       {/* Login Card - Glassmorphism */}
       <div className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl">
         
-        <div className="text-center mb-8">
+        {isEmailSent ? (
+          <div className="text-center py-4">
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400 mb-2">
+              Cek Email Anda
+            </h2>
+            <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <HiEnvelope className="text-4xl text-emerald-400" />
+            </div>
+            <p className="text-gray-300 text-sm mb-8 leading-relaxed">
+              Tautan verifikasi telah dikirimkan ke <br/>
+              <strong className="text-white text-base">{email}</strong><br/><br/>
+              Silakan periksa kotak masuk (atau folder spam) Anda dan klik tautan tersebut untuk mengaktifkan akun!
+            </p>
+            <button
+              onClick={() => {
+                setIsEmailSent(false);
+                setIsLogin(true);
+              }}
+              className="w-full bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-white/10"
+            >
+              Kembali ke Login
+            </button>
+          </div>
+        ) : (
+          <React.Fragment>
+            <div className="text-center mb-8">
           <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
@@ -126,6 +170,8 @@ function Login() {
             </button>
           </p>
         </div>
+          </React.Fragment>
+        )}
       </div>
     </div>
   );
