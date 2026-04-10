@@ -12,6 +12,7 @@ import Originals from "./pages/Originals";
 import WatchList from "./pages/WatchList";
 import Profile from "./pages/Profile";
 import StudioMovies from "./pages/StudioMovies";
+import Login from "./pages/Login";
 function App() {
   return (
     <BrowserRouter>
@@ -28,6 +29,7 @@ function App() {
             <Route path="/watchlist" element={<WatchList />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/studio/:id" element={<StudioMovies />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </div>
         <Footer />

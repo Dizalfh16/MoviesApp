@@ -2,20 +2,41 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import IMAGE_BASE_URL from "../Constant";
 import { HiTrash } from "react-icons/hi2";
+import { useAuth } from "../components/AuthContext";
+import { supabase } from "../Services/supabaseClient";
 
 function WatchList() {
   const [watchlist, setWatchlist] = useState([]);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("watchlist") || "[]");
-    setWatchlist(saved);
-  }, []);
+    fetchWatchlist();
+  }, [user]);
 
-  const removeFromWatchlist = (id) => {
-    const updated = watchlist.filter((item) => item.id !== id);
+  const fetchWatchlist = async () => {
+    if (!user) {
+      setWatchlist([]);
+      return;
+    }
+    const { data } = await supabase
+      .from("watchlist")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (data) setWatchlist(data);
+  };
+
+  const removeFromWatchlist = async (movieId) => {
+    if (!user) return;
+    const updated = watchlist.filter((item) => item.movie_id !== movieId);
     setWatchlist(updated);
-    localStorage.setItem("watchlist", JSON.stringify(updated));
+
+    await supabase
+      .from("watchlist")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("movie_id", movieId);
   };
 
   return (
@@ -45,7 +66,7 @@ function WatchList() {
           {watchlist.map((item) => (
             <div key={item.id} className="relative group">
               <div
-                onClick={() => navigate(`/movie/${item.id}`)}
+                onClick={() => navigate(`/movie/${item.movie_id}`)}
                 className="cursor-pointer hover:scale-105 transition-all duration-300"
               >
                 <img
@@ -60,7 +81,7 @@ function WatchList() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  removeFromWatchlist(item.id);
+                  removeFromWatchlist(item.movie_id);
                 }}
                 className="absolute top-2 right-2 bg-red-600/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600"
               >

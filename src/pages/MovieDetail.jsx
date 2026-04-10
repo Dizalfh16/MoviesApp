@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import GlobalApi from "../Services/GlobalApi";
 import IMAGE_BASE_URL from "../Constant";
 import { HiArrowLeft, HiPlay, HiPlus, HiStar, HiCheck } from "react-icons/hi2";
+import { useAuth } from "../components/AuthContext";
+import { supabase } from "../Services/supabaseClient";
 
 function MovieDetail() {
   const { id } = useParams();
@@ -13,32 +15,56 @@ function MovieDetail() {
   const [trailer, setTrailer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchMovieData();
-    checkWatchlist();
   }, [id]);
 
-  const checkWatchlist = () => {
-    const saved = JSON.parse(localStorage.getItem("watchlist") || "[]");
-    setIsInWatchlist(saved.some((item) => item.id === parseInt(id)));
+  useEffect(() => {
+    checkWatchlist();
+  }, [id, user]);
+
+  const checkWatchlist = async () => {
+    if (!user) {
+      setIsInWatchlist(false);
+      return;
+    }
+    const { data } = await supabase
+      .from("watchlist")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("movie_id", parseInt(id))
+      .maybeSingle();
+
+    if (data) setIsInWatchlist(true);
+    else setIsInWatchlist(false);
   };
 
-  const toggleWatchlist = () => {
-    const saved = JSON.parse(localStorage.getItem("watchlist") || "[]");
+  const toggleWatchlist = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    
     if (isInWatchlist) {
-      const updated = saved.filter((item) => item.id !== movie.id);
-      localStorage.setItem("watchlist", JSON.stringify(updated));
       setIsInWatchlist(false);
+      await supabase
+        .from("watchlist")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("movie_id", movie.id);
     } else {
-      saved.push({
-        id: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
-      });
-      localStorage.setItem("watchlist", JSON.stringify(saved));
       setIsInWatchlist(true);
+      await supabase
+        .from("watchlist")
+        .insert({
+          user_id: user.id,
+          movie_id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+        });
     }
   };
 

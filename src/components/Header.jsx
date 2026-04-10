@@ -10,8 +10,10 @@ import {
 import { HiPlus, HiDotsVertical } from "react-icons/hi";
 import Disney from "../assets/images/disney-logo-1.png";
 import HeaderItem from "./HeaderItem";
+import { useAuth } from "./AuthContext";
 
 function Header() {
+  const { user } = useAuth();
   const [toggle, setToggle] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
@@ -104,13 +106,22 @@ function Header() {
           </div>
         </div>
 
-        {/* Profile Avatar */}
-        <img
-          src={JSON.parse(localStorage.getItem("userProfile") || "{}").avatar || "https://i.pinimg.com/474x/db/3a/62/db3a623acc8396fb285ec899ad01cd10.jpg"}
-          className="w-[40px] h-[40px] md:w-[48px] md:h-[48px] rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all duration-300 shadow-lg"
-          alt="Profile"
-          onClick={() => navigate("/profile")}
-        />
+        {/* Profile Avatar / Login Button */}
+        {user ? (
+          <img
+            src={user.user_metadata?.avatar_url || "https://i.pinimg.com/474x/db/3a/62/db3a623acc8396fb285ec899ad01cd10.jpg"}
+            className="w-[40px] h-[40px] md:w-[48px] md:h-[48px] rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-emerald-500 transition-all duration-300 shadow-lg"
+            alt="Profile"
+            onClick={() => navigate("/profile")}
+          />
+        ) : (
+          <button 
+            onClick={() => navigate("/login")}
+            className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white px-5 py-2 rounded-full font-bold transition-all shadow-lg hover:shadow-blue-500/50 text-sm tracking-widest uppercase border border-white/10"
+          >
+            Login
+          </button>
+        )}
       </div>
     </div>
   );
