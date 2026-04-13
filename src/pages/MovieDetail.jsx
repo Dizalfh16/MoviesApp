@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import GlobalApi from "../Services/GlobalApi";
 import IMAGE_BASE_URL from "../Constant";
-import { HiArrowLeft, HiPlay, HiPlus, HiStar, HiCheck } from "react-icons/hi2";
+import { HiArrowLeft, HiPlay, HiPlus, HiStar, HiCheck, HiHeart } from "react-icons/hi2";
 import { useAuth } from "../components/AuthContext";
 import { supabase } from "../Services/supabaseClient";
 
@@ -15,6 +15,7 @@ function MovieDetail() {
   const [trailer, setTrailer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -24,6 +25,7 @@ function MovieDetail() {
 
   useEffect(() => {
     checkWatchlist();
+    checkFavorite();
   }, [id, user]);
 
   const checkWatchlist = async () => {
@@ -40,6 +42,23 @@ function MovieDetail() {
 
     if (data) setIsInWatchlist(true);
     else setIsInWatchlist(false);
+  };
+
+  const checkFavorite = async () => {
+    if (!user) {
+      setIsFavorite(false);
+      return;
+    }
+    // We try catching the error in case the table doesn't exist yet
+    const { data, error } = await supabase
+      .from("favorites")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("movie_id", parseInt(id))
+      .maybeSingle();
+
+    if (data) setIsFavorite(true);
+    else setIsFavorite(false);
   };
 
   const toggleWatchlist = async () => {
@@ -65,6 +84,37 @@ function MovieDetail() {
           title: movie.title,
           poster_path: movie.poster_path,
         });
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    
+    if (isFavorite) {
+      setIsFavorite(false);
+      await supabase
+        .from("favorites")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("movie_id", movie.id);
+    } else {
+      setIsFavorite(true);
+      const { error } = await supabase
+        .from("favorites")
+        .insert({
+          user_id: user.id,
+          movie_id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+        });
+      if (error) {
+        console.error("Supabase Insert Error:", error);
+        alert(`Gagal menambahkan ke favorit.\nError: ${error.message}\n\nHint: Cek pengaturan RLS (Row Level Security) di tabel Anda.`);
+        setIsFavorite(false);
+      }
     }
   };
 
@@ -216,6 +266,17 @@ function MovieDetail() {
                 ) : (
                   <><HiPlus className="text-xl" /> Watchlist</>
                 )}
+              </button>
+              <button
+                onClick={toggleFavorite}
+                className={`flex items-center justify-center p-3 rounded-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm
+                  ${isFavorite
+                    ? "bg-pink-600/30 border border-pink-500/50 text-pink-400"
+                    : "bg-white/10 border border-white/30 hover:bg-white/20 text-white"
+                  }`}
+                title={isFavorite ? "Hapus dari Favorit" : "Tambah ke Favorit"}
+              >
+                <HiHeart className="text-xl" />
               </button>
             </div>
 

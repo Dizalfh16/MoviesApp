@@ -50,6 +50,7 @@ function Profile() {
   const [editForm, setEditForm] = useState({ name: "", bio: "" });
   const [watchlist, setWatchlist] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [historyCount, setHistoryCount] = useState(0);
 
   const nameInputRef = useRef(null);
 
@@ -70,6 +71,12 @@ function Profile() {
     const loadData = async () => {
       const { data } = await supabase.from("watchlist").select("*").order("created_at", { ascending: false });
       if (data) setWatchlist(data);
+
+      const { data: favData } = await supabase.from("favorites").select("id").eq("user_id", user.id);
+      if (favData) setFavorites(favData);
+
+      const { count: histCount, error } = await supabase.from("history").select("*", { count: 'exact', head: true }).eq("user_id", user.id);
+      if (!error && histCount !== null) setHistoryCount(histCount);
     };
     loadData();
 
@@ -179,7 +186,7 @@ function Profile() {
     {
       icon: HiEye,
       label: "Ditonton",
-      value: Math.floor(Math.random() * 20) + watchlist.length,
+      value: historyCount,
       color: "from-purple-500 to-violet-400",
       onClick: null,
     },
