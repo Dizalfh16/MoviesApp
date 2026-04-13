@@ -16,18 +16,19 @@ import {
   HiClock,
   HiHeart,
   HiChevronRight,
+  HiArrowUpTray,
 } from "react-icons/hi2";
 
 const DEFAULT_AVATAR =
-  "https://i.pinimg.com/474x/db/3a/62/db3a623acc8396fb285ec899ad01cd10.jpg";
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=User";
 
 const AVATAR_OPTIONS = [
-  "https://i.pinimg.com/736x/a7/91/76/a791768105db81c5bb4005e6d4e3a3a9.jpg",
-  "https://i.pinimg.com/736x/10/13/8b/10138b47c12e3085d498db0c95e8f0dd.jpg",
-  "https://i.pinimg.com/736x/f5/27/81/f5278114c0b106e4f0aa0ee7a1f98267.jpg",
-  "https://i.pinimg.com/736x/5f/38/c8/5f38c8003dae02f85bcfa87a82ffdc96.jpg",
-  "https://i.pinimg.com/736x/6a/55/2a/6a552a72c654c9801774e50f6b3cd302.jpg",
-  "https://i.pinimg.com/736x/40/e6/30/40e63027eb218b5abfbf45eca9554bad.jpg",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Mimi",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Oreo",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jack",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo",
 ];
 
 function Profile() {
@@ -35,6 +36,7 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const { user } = useAuth();
 
   // User profile state
@@ -103,6 +105,44 @@ function Profile() {
     await supabase.auth.updateUser({
       data: { avatar_url: url }
     });
+  };
+
+  const uploadAvatar = async (event) => {
+    try {
+      setUploading(true);
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Upload to supabase storage bucket named 'avatars'
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const publicUrl = data.publicUrl;
+
+      // Update UI and DB
+      setProfile({ ...profile, avatar: publicUrl });
+      setShowAvatarPicker(false);
+      
+      await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      });
+
+    } catch (error) {
+      alert("Gagal mengunggah foto: " + error.message + "\n\nPastikan Anda sudah membuat bucket 'avatars' dan menjadikannya Public di Supabase Storage.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -272,14 +312,26 @@ function Profile() {
               className="mt-6 p-5 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl animate-fadeIn"
               style={{ animation: "fadeIn 0.3s ease-out" }}
             >
-              <p className="text-white font-semibold mb-3">Pilih Avatar</p>
+              <div className="flex justify-between items-center mb-4">
+                <p className="text-white font-semibold">Pilih Avatar</p>
+                <label className={`cursor-pointer bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 text-sm px-4 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 ${uploading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                  {uploading ? (
+                    <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <HiArrowUpTray className="text-lg" />
+                  )}
+                  {uploading ? "Mengunggah..." : "Upload Foto"}
+                  <input type="file" accept="image/*" onChange={uploadAvatar} disabled={uploading} className="hidden" />
+                </label>
+              </div>
+              
               <div className="flex flex-wrap gap-3">
                 {AVATAR_OPTIONS.map((url, idx) => (
                   <img
                     key={idx}
                     src={url}
                     alt={`Avatar ${idx + 1}`}
-                    className={`w-16 h-16 rounded-full object-cover cursor-pointer border-2 transition-all duration-300 hover:scale-110 ${
+                    className={`w-16 h-16 bg-white/5 rounded-full object-cover cursor-pointer border-2 transition-all duration-300 hover:scale-110 ${
                       profile.avatar === url
                         ? "border-blue-500 scale-110"
                         : "border-transparent hover:border-white/50"
