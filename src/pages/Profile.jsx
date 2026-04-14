@@ -51,6 +51,7 @@ function Profile() {
   const [watchlist, setWatchlist] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [historyCount, setHistoryCount] = useState(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   const nameInputRef = useRef(null);
 
@@ -69,6 +70,7 @@ function Profile() {
     });
 
     const loadData = async () => {
+      setIsLoadingStats(true);
       const { data } = await supabase.from("watchlist").select("*").order("created_at", { ascending: false });
       if (data) setWatchlist(data);
 
@@ -77,6 +79,8 @@ function Profile() {
 
       const { count: histCount, error } = await supabase.from("history").select("*", { count: 'exact', head: true }).eq("user_id", user.id);
       if (!error && histCount !== null) setHistoryCount(histCount);
+
+      setIsLoadingStats(false);
     };
     loadData();
 
@@ -181,7 +185,7 @@ function Profile() {
       label: "Favorites",
       value: favorites.length,
       color: "from-pink-500 to-rose-400",
-      onClick: null,
+      onClick: () => navigate("/favorites"),
     },
     {
       icon: HiEye,
@@ -201,9 +205,9 @@ function Profile() {
 
   // Menu items
   const menuItems = [
-    { icon: HiClock, label: "Riwayat Tontonan", subtitle: "Lihat film yang sudah ditonton" },
-    { icon: HiHeart, label: "Film Favorit", subtitle: "Film yang kamu sukai" },
-    { icon: HiFilm, label: "Preferensi Genre", subtitle: "Atur genre favoritmu" },
+    { icon: HiClock, label: "Riwayat Tontonan", subtitle: "Lihat film yang sudah ditonton", onClick: null },
+    { icon: HiHeart, label: "Film Favorit", subtitle: "Film yang kamu sukai", onClick: () => navigate("/favorites") },
+    { icon: HiFilm, label: "Preferensi Genre", subtitle: "Atur genre favoritmu", onClick: null },
   ];
 
   return (
@@ -379,7 +383,11 @@ function Profile() {
               <div className={`text-3xl mx-auto mb-2 -mt-10`}>
                 <stat.icon className="mx-auto" style={{ color: idx === 0 ? '#38bdf8' : idx === 1 ? '#f472b6' : idx === 2 ? '#a78bfa' : '#fbbf24' }} />
               </div>
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
+              {isLoadingStats ? (
+                <div className="w-8 h-8 bg-white/10 rounded-md animate-pulse mx-auto mt-1 mb-1 backdrop-blur-sm"></div>
+              ) : (
+                <p className="text-2xl font-bold text-white">{stat.value}</p>
+              )}
               <p className="text-gray-400 text-xs mt-1">{stat.label}</p>
             </div>
           ))}
@@ -398,6 +406,7 @@ function Profile() {
             {menuItems.map((item, idx) => (
               <div
                 key={idx}
+                onClick={item.onClick}
                 className="flex items-center gap-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all duration-300 group"
               >
                 <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white/20 transition-all">
