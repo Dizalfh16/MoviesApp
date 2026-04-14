@@ -51,7 +51,6 @@ function Profile() {
   const [watchlist, setWatchlist] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [historyCount, setHistoryCount] = useState(0);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   const nameInputRef = useRef(null);
 
@@ -70,7 +69,6 @@ function Profile() {
     });
 
     const loadData = async () => {
-      setIsLoadingStats(true);
       const { data } = await supabase.from("watchlist").select("*").order("created_at", { ascending: false });
       if (data) setWatchlist(data);
 
@@ -79,8 +77,6 @@ function Profile() {
 
       const { count: histCount, error } = await supabase.from("history").select("*", { count: 'exact', head: true }).eq("user_id", user.id);
       if (!error && histCount !== null) setHistoryCount(histCount);
-
-      setIsLoadingStats(false);
     };
     loadData();
 
@@ -383,11 +379,7 @@ function Profile() {
               <div className={`text-3xl mx-auto mb-2 -mt-10`}>
                 <stat.icon className="mx-auto" style={{ color: idx === 0 ? '#38bdf8' : idx === 1 ? '#f472b6' : idx === 2 ? '#a78bfa' : '#fbbf24' }} />
               </div>
-              {isLoadingStats ? (
-                <div className="w-8 h-8 bg-white/10 rounded-md animate-pulse mx-auto mt-1 mb-1 backdrop-blur-sm"></div>
-              ) : (
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-              )}
+              <p className="text-2xl font-bold text-white">{stat.value}</p>
               <p className="text-gray-400 text-xs mt-1">{stat.label}</p>
             </div>
           ))}
