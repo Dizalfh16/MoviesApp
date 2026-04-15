@@ -51,6 +51,7 @@ function Profile() {
   const [watchlist, setWatchlist] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [historyCount, setHistoryCount] = useState(0);
+  const [reviewsCount, setReviewsCount] = useState(0);
 
   const nameInputRef = useRef(null);
 
@@ -77,6 +78,9 @@ function Profile() {
 
       const { count: histCount, error } = await supabase.from("history").select("*", { count: 'exact', head: true }).eq("user_id", user.id);
       if (!error && histCount !== null) setHistoryCount(histCount);
+
+      const { count: revCount, error: revError } = await supabase.from("reviews").select("*", { count: 'exact', head: true }).eq("user_id", user.id);
+      if (!revError && revCount !== null) setReviewsCount(revCount);
     };
     loadData();
 
@@ -193,9 +197,9 @@ function Profile() {
     {
       icon: HiStar,
       label: "Reviews",
-      value: 0,
+      value: reviewsCount,
       color: "from-amber-500 to-yellow-400",
-      onClick: null,
+      onClick: () => navigate("/reviews"),
     },
   ];
 

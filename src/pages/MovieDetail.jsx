@@ -16,6 +16,10 @@ function MovieDetail() {
   const [loading, setLoading] = useState(true);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [tmdbReviews, setTmdbReviews] = useState([]);
+  const [myReviewText, setMyReviewText] = useState("");
+  const [myRating, setMyRating] = useState(0);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -26,7 +30,59 @@ function MovieDetail() {
   useEffect(() => {
     checkWatchlist();
     checkFavorite();
+    fetchReviews();
   }, [id, user]);
+
+  const fetchReviews = async () => {
+    const { data } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("movie_id", parseInt(id))
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setReviews(data);
+      if (user) {
+        const myExistingReview = data.find(r => r.user_id === user.id);
+        if (myExistingReview) {
+          setMyReviewText(myExistingReview.review_text);
+          setMyRating(myExistingReview.rating);
+        } else {
+          setMyReviewText("");
+          setMyRating(0);
+        }
+      }
+    }
+  };
+
+  const submitReview = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (myRating === 0) {
+      alert("Harap pilih bintang ulasan.");
+      return;
+    }
+
+    await supabase.from("reviews").delete().eq("user_id", user.id).eq("movie_id", parseInt(id));
+
+    const { error } = await supabase.from("reviews").insert({
+      user_id: user.id,
+      movie_id: parseInt(id),
+      movie_title: movie.title || movie.name,
+      poster_path: movie.poster_path,
+      rating: myRating,
+      review_text: myReviewText.trim()
+    });
+
+    if (error) {
+      alert("Gagal mengirim ulasan: " + error.message);
+    } else {
+      fetchReviews();
+      alert("Ulasan berhasil tersimpan!");
+    }
+  };
 
   const checkWatchlist = async () => {
     if (!user) {
@@ -121,15 +177,17 @@ function MovieDetail() {
   const fetchMovieData = async () => {
     setLoading(true);
     try {
-      const [detailRes, creditsRes, similarRes, videosRes] = await Promise.all([
+      const [detailRes, creditsRes, similarRes, videosRes, reviewsRes] = await Promise.all([
         GlobalApi.getMovieDetails(id),
         GlobalApi.getMovieCredits(id),
         GlobalApi.getSimilarMovies(id),
         GlobalApi.getMovieVideos(id),
+        GlobalApi.getMovieReviews(id),
       ]);
       setMovie(detailRes.data);
       setCredits(creditsRes.data);
       setSimilarMovies(similarRes.data.results.slice(0, 12));
+      setTmdbReviews(reviewsRes.data.results.slice(0, 5)); // Ambil max 5 review TMDB
 
       const trailerVideo = videosRes.data.results.find(
         (v) => v.type === "Trailer" && v.site === "YouTube"
@@ -410,6 +468,129 @@ function MovieDetail() {
             </div>
           </div>
         )}
+        {/* Reviews Section */}
+        <div className="mt-10 pb-16 border-t border-white/10 pt-10">
+          <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <span className="text-yellow-400">⭐</span> Ulasan Penonton
+          </h3>
+
+          {/* Form Tulis Ulasan (Hanya untuk User Login) */}
+          {user ? (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-8 backdrop-blur-sm">
+              <h4 className="text-lg font-semibold mb-3">Tulis Ulasanmu</h4>
+              <div className="flex items-center gap-2 mb-4">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setMyRating(star)}
+                    className="text-2xl focus:outline-none transition-transform hover:scale-110"
+                  >
+                    <HiStar className={star <= myRating ? "text-yellow-400" : "text-gray-600"} />
+                  </button>
+                ))}
+                <span className="text-sm text-gray-400 ml-2">
+                  {myRating > 0 ? `${myRating} dari 5 Bintang` : "Pilih bintang"}
+                </span>
+              </div>
+              <textarea
+                rows="3"
+                className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition-colors resize-none mb-3"
+                placeholder="Apa pendapatmu tentang film ini?"
+                value={myReviewText}
+                onChange={(e) => setMyReviewText(e.target.value)}
+              />
+              <button
+                onClick={submitReview}
+                className="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Kirim Ulasan
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 mb-8 text-center">
+              <p className="text-gray-400 mb-3">Ingin memberikan pendapat tentang film ini?</p>
+              <button
+                onClick={() => navigate('/login')}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Login untuk Menulis Ulasan
+              </button>
+            </div>
+          )}
+
+          {/* Daftar Ulasan yang Sudah Ada */}
+          <div className="space-y-4">
+            {reviews.length === 0 && tmdbReviews.length === 0 ? (
+              <p className="text-gray-500 text-center py-6">Belum ada ulasan untuk film ini. Jadilah yang pertama!</p>
+            ) : (
+              <>
+                {/* Supabase Local Reviews */}
+                {reviews.map((r) => (
+                  <div key={r.id} className="bg-white/5 p-4 rounded-xl border border-white/5">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full flex items-center justify-center font-bold text-white shadow-lg">
+                          User
+                        </div>
+                        <div>
+                          <div className="flex gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <HiStar key={i} className={`text-sm ${i < r.rating ? "text-yellow-400" : "text-gray-600"}`} />
+                            ))}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {new Date(r.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric'})}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm md:text-base leading-relaxed mt-3">"{r.review_text}"</p>
+                  </div>
+                ))}
+
+                {/* TMDB Reviews */}
+                {tmdbReviews.map((r) => (
+                  <div key={r.id} className="bg-black/30 p-4 rounded-xl border border-white/5">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        {r.author_details?.avatar_path ? (
+                          <img 
+                            src={r.author_details.avatar_path.startsWith('/') ? IMAGE_BASE_URL + r.author_details.avatar_path : r.author_details.avatar_path.substring(1)} 
+                            alt={r.author} 
+                            onError={(e) => { e.target.src = "https://via.placeholder.com/40x40?text=" + r.author.charAt(0) }}
+                            className="w-10 h-10 rounded-full object-cover shadow-lg"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-tr from-gray-600 to-gray-800 rounded-full flex items-center justify-center font-bold text-white shadow-lg">
+                            {r.author.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-gray-300">{r.author}</span>
+                            {r.author_details?.rating && (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <HiStar className="text-sm text-yellow-400" />
+                                <span className="text-xs text-yellow-400">{r.author_details.rating}/10</span>
+                                <span className="text-xs text-gray-500 ml-1">(TMDB)</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {new Date(r.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric'})}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm md:text-base leading-relaxed mt-3 whitespace-pre-wrap line-clamp-4">
+                      "{r.content}"
+                    </p>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

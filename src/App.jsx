@@ -15,6 +15,7 @@ import StudioMovies from "./pages/StudioMovies";
 import Login from "./pages/Login";
 import Favorites from "./pages/Favorites";
 import History from "./pages/History";
+import MyReviews from "./pages/MyReviews";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/history" element={<History />} />
+            <Route path="/reviews" element={<MyReviews />} />
           </Routes>
         </div>
         <Footer />

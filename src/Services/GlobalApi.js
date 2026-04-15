@@ -33,6 +33,8 @@ const getTopRated = (page = 1) =>
 const getMoviesByCompany = (companyId, page = 1) =>
   api.get(`/discover/movie`, { params: { with_companies: companyId, page } });
 
+const getMovieReviews = (id) => api.get(`/movie/${id}/reviews`);
+
 export default {
   getTrendingMovies,
   getMovieByGenreId,
@@ -40,6 +42,7 @@ export default {
   getMovieCredits,
   getSimilarMovies,
   getMovieVideos,
+  getMovieReviews,
   searchMovies,
   getPopularMovies,
   getTvSeries,
