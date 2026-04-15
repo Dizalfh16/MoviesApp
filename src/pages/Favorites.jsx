@@ -45,6 +45,15 @@ function Favorites() {
 
   return (
     <div className="min-h-screen bg-[#040714] px-5 md:px-16 py-8">
+      <div className="mb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10 w-fit"
+        >
+          <span className="text-xl">←</span> Kembali
+        </button>
+      </div>
+
       <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 flex items-center gap-3">
         <span className="text-pink-500 text-3xl">❤️</span> Film Favorit Saya
       </h1>
@@ -82,7 +91,7 @@ function Favorites() {
                 <img
                   src={IMAGE_BASE_URL + item.poster_path}
                   alt={item.title}
-                  className="w-full rounded-lg border-2 border-transparent group-hover:border-pink-500 transition-all duration-300 shadow-md"
+                  className="w-full aspect-[2/3] object-cover rounded-lg border-2 border-transparent group-hover:border-pink-500 transition-all duration-300 shadow-md"
                 />
                 <p className="text-sm text-gray-300 mt-2 truncate group-hover:text-white transition">
                   {item.title || item.name}

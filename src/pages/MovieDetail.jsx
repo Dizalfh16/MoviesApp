@@ -141,6 +141,35 @@ function MovieDetail() {
     setLoading(false);
   };
 
+  const recordHistory = async (movieData) => {
+    if (!user || !movieData) return;
+
+    try {
+      // Hapus entri lama jika sudah ada (agar timestamp terupdate/film naik ke atas)
+      await supabase
+        .from("history")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("movie_id", movieData.id);
+
+      // Masukkan ke riwayat
+      await supabase.from("history").insert({
+        user_id: user.id,
+        movie_id: movieData.id,
+        title: movieData.title || movieData.name,
+        poster_path: movieData.poster_path,
+      });
+    } catch (e) {
+      console.error("Error saving history", e);
+    }
+  };
+
+  useEffect(() => {
+    if (user && movie) {
+      recordHistory(movie);
+    }
+  }, [user, movie]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#040714] flex items-center justify-center">

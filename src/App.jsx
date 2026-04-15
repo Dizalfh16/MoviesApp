@@ -14,6 +14,8 @@ import Profile from "./pages/Profile";
 import StudioMovies from "./pages/StudioMovies";
 import Login from "./pages/Login";
 import Favorites from "./pages/Favorites";
+import History from "./pages/History";
+
 function App() {
   return (
     <BrowserRouter>
@@ -32,6 +34,7 @@ function App() {
             <Route path="/studio/:id" element={<StudioMovies />} />
             <Route path="/login" element={<Login />} />
             <Route path="/favorites" element={<Favorites />} />
+            <Route path="/history" element={<History />} />
           </Routes>
         </div>
         <Footer />

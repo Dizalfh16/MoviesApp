@@ -58,7 +58,7 @@ function StudioMovies() {
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-              <div key={item} className="h-[250px] md:h-[350px] bg-white/5 rounded-lg animate-pulse" />
+              <div key={item} className="w-full aspect-[2/3] bg-white/5 rounded-lg border border-white/5 animate-pulse backdrop-blur-sm" />
             ))}
           </div>
         ) : (
@@ -72,7 +72,7 @@ function StudioMovies() {
                 <img 
                   src={IMAGE_BASE_URL + movie.poster_path} 
                   alt={movie.title}
-                  className="rounded-lg shadow-lg border-[2px] border-transparent group-hover:border-white w-full h-[250px] md:h-[350px] object-cover"
+                  className="rounded-lg shadow-lg border-[2px] border-transparent group-hover:border-white w-full aspect-[2/3] object-cover"
                 />
                 <h2 className="text-white mt-2 text-sm md:text-base font-semibold truncate group-hover:text-blue-400 transition-colors">
                   {movie.title || movie.name}

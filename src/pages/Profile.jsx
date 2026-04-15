@@ -188,7 +188,7 @@ function Profile() {
       label: "Ditonton",
       value: historyCount,
       color: "from-purple-500 to-violet-400",
-      onClick: null,
+      onClick: () => navigate("/history"),
     },
     {
       icon: HiStar,
@@ -201,7 +201,7 @@ function Profile() {
 
   // Menu items
   const menuItems = [
-    { icon: HiClock, label: "Riwayat Tontonan", subtitle: "Lihat film yang sudah ditonton", onClick: null },
+    { icon: HiClock, label: "Riwayat Tontonan", subtitle: "Lihat film yang sudah ditonton", onClick: () => navigate("/history") },
     { icon: HiHeart, label: "Film Favorit", subtitle: "Film yang kamu sukai", onClick: () => navigate("/favorites") },
     { icon: HiFilm, label: "Preferensi Genre", subtitle: "Atur genre favoritmu", onClick: null },
   ];

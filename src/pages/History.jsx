@@ -5,42 +5,48 @@ import { HiTrash } from "react-icons/hi2";
 import { useAuth } from "../components/AuthContext";
 import { supabase } from "../Services/supabaseClient";
 
-function WatchList() {
-  const [watchlist, setWatchlist] = useState([]);
+function History() {
+  const [historyItems, setHistoryItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchWatchlist();
+    fetchHistory();
   }, [user]);
 
-  const fetchWatchlist = async () => {
+  const fetchHistory = async () => {
     setIsLoading(true);
     if (!user) {
-      setWatchlist([]);
+      setHistoryItems([]);
       setIsLoading(false);
       return;
     }
     const { data } = await supabase
-      .from("watchlist")
+      .from("history")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (data) setWatchlist(data);
+    if (data) setHistoryItems(data);
     setIsLoading(false);
   };
 
-  const removeFromWatchlist = async (movieId) => {
+  const removeFromHistory = async (movieId) => {
     if (!user) return;
-    const updated = watchlist.filter((item) => item.movie_id !== movieId);
-    setWatchlist(updated);
+    const updated = historyItems.filter((item) => item.movie_id !== movieId);
+    setHistoryItems(updated);
 
     await supabase
-      .from("watchlist")
+      .from("history")
       .delete()
       .eq("user_id", user.id)
       .eq("movie_id", movieId);
+  };
+
+  const clearAllHistory = async () => {
+    if (!user) return;
+    setHistoryItems([]);
+    await supabase.from("history").delete().eq("user_id", user.id);
   };
 
   return (
@@ -54,9 +60,19 @@ function WatchList() {
         </button>
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold text-white mb-6">
-        ➕ Watch List Saya
-      </h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+          <span className="text-purple-500 text-3xl">👁️</span> Riwayat Tontonan
+        </h1>
+        {historyItems.length > 0 && !isLoading && (
+          <button
+            onClick={clearAllHistory}
+            className="text-sm px-4 py-2 bg-red-600/20 text-red-500 hover:bg-red-600/40 rounded-lg transition-colors border border-red-500/30"
+          >
+            Hapus Semua Riwayat
+          </button>
+        )}
+      </div>
 
       {isLoading ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-5">
@@ -64,25 +80,25 @@ function WatchList() {
             <div key={i} className="aspect-[2/3] bg-white/5 rounded-lg border border-white/5 animate-pulse backdrop-blur-sm"></div>
           ))}
         </div>
-      ) : watchlist.length === 0 ? (
+      ) : historyItems.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-6xl mb-4">🎬</p>
+          <p className="text-6xl mb-4">📭</p>
           <p className="text-gray-400 text-lg mb-2">
-            Watch List Anda masih kosong
+            Belum ada rekam jejak film yang Anda tonton.
           </p>
           <p className="text-gray-500 text-sm mb-6">
-            Tambahkan film dari halaman detail dengan menekan tombol "Watchlist"
+            Film yang halamannya Anda kunjungi akan muncul di sini.
           </p>
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 bg-blue-600 rounded-lg hover:bg-blue-700 transition text-white font-medium"
+            className="px-6 py-3 bg-purple-600 rounded-lg hover:bg-purple-700 transition text-white font-medium shadow-lg shadow-purple-500/30"
           >
-            Jelajahi Film
+            Mulai Menjelajah
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-5">
-          {watchlist.map((item) => (
+          {historyItems.map((item) => (
             <div key={item.id} className="relative group">
               <div
                 onClick={() => navigate(`/movie/${item.movie_id}`)}
@@ -91,7 +107,7 @@ function WatchList() {
                 <img
                   src={IMAGE_BASE_URL + item.poster_path}
                   alt={item.title}
-                  className="w-full aspect-[2/3] object-cover rounded-lg border-2 border-transparent group-hover:border-gray-400 transition-all duration-300"
+                  className="w-full aspect-[2/3] object-cover rounded-lg border-2 border-transparent group-hover:border-purple-500 transition-all duration-300 shadow-md"
                 />
                 <p className="text-sm text-gray-300 mt-2 truncate group-hover:text-white transition">
                   {item.title || item.name}
@@ -100,9 +116,10 @@ function WatchList() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  removeFromWatchlist(item.movie_id);
+                  removeFromHistory(item.movie_id);
                 }}
-                className="absolute top-2 right-2 bg-red-600/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600"
+                className="absolute top-2 right-2 bg-red-600/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600 z-10"
+                title="Hapus dari riwayat"
               >
                 <HiTrash className="text-white text-sm" />
               </button>
@@ -114,4 +131,4 @@ function WatchList() {
   );
 }
 
-export default WatchList;
+export default History;
