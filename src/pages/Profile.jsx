@@ -19,6 +19,8 @@ import {
   HiArrowUpTray,
 } from "react-icons/hi2";
 
+import Popup from "../components/Popup";
+
 const DEFAULT_AVATAR =
   "https://api.dicebear.com/7.x/avataaars/svg?seed=User";
 
@@ -37,7 +39,17 @@ function Profile() {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [popupData, setPopupData] = useState({ show: false, message: "", type: "success" });
+
+  const showPopup = (msg, type = 'success') => {
+    setPopupData({ show: true, message: msg, type });
+    if (type === 'success') {
+      setTimeout(() => setPopupData((prev) => ({ ...prev, show: false })), 2000);
+    }
+  };
+
+  const closePopup = () => setPopupData({ ...popupData, show: false });
 
   // User profile state
   const [profile, setProfile] = useState({
@@ -150,7 +162,7 @@ function Profile() {
       });
 
     } catch (error) {
-      alert("Gagal mengunggah foto: " + error.message + "\n\nPastikan Anda sudah membuat bucket 'avatars' dan menjadikannya Public di Supabase Storage.");
+      showPopup("Gagal mengunggah foto: " + error.message + "\n\nPastikan Anda sudah membuat bucket 'avatars' dan menjadikannya Public di Supabase Storage.", "error");
     } finally {
       setUploading(false);
     }
@@ -207,7 +219,7 @@ function Profile() {
   const menuItems = [
     { icon: HiClock, label: "Riwayat Tontonan", subtitle: "Lihat film yang sudah ditonton", onClick: () => navigate("/history") },
     { icon: HiHeart, label: "Film Favorit", subtitle: "Film yang kamu sukai", onClick: () => navigate("/favorites") },
-    { icon: HiFilm, label: "Preferensi Genre", subtitle: "Atur genre favoritmu", onClick: null },
+    { icon: HiFilm, label: "Preferensi Genre", subtitle: "Atur genre favoritmu", onClick: () => navigate("/preferences") },
   ];
 
   return (
@@ -482,6 +494,9 @@ function Profile() {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+
+      {/* Global Popup */}
+      <Popup isVisible={popupData.show} message={popupData.message} type={popupData.type} onClose={closePopup} />
     </div>
   );
 }

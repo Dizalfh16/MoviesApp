@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import Favorites from "./pages/Favorites";
 import History from "./pages/History";
 import MyReviews from "./pages/MyReviews";
+import GenrePreferences from "./pages/GenrePreferences";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/history" element={<History />} />
             <Route path="/reviews" element={<MyReviews />} />
+            <Route path="/preferences" element={<GenrePreferences />} />
           </Routes>
         </div>
         <Footer />

@@ -5,6 +5,7 @@ import IMAGE_BASE_URL from "../Constant";
 import { HiArrowLeft, HiPlay, HiPlus, HiStar, HiCheck, HiHeart } from "react-icons/hi2";
 import { useAuth } from "../components/AuthContext";
 import { supabase } from "../Services/supabaseClient";
+import Popup from "../components/Popup";
 
 function MovieDetail() {
   const { id } = useParams();
@@ -21,6 +22,17 @@ function MovieDetail() {
   const [myReviewText, setMyReviewText] = useState("");
   const [myRating, setMyRating] = useState(0);
   const { user } = useAuth();
+
+  const [popupData, setPopupData] = useState({ show: false, message: "", type: "success" });
+
+  const showPopup = (msg, type = 'success') => {
+    setPopupData({ show: true, message: msg, type });
+    if (type === 'success') {
+      setTimeout(() => setPopupData((prev) => ({ ...prev, show: false })), 2000);
+    }
+  };
+
+  const closePopup = () => setPopupData((prev) => ({ ...prev, show: false }));
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -61,7 +73,7 @@ function MovieDetail() {
       return;
     }
     if (myRating === 0) {
-      alert("Harap pilih bintang ulasan.");
+      showPopup("Harap pilih bintang ulasan.", "error");
       return;
     }
 
@@ -77,10 +89,10 @@ function MovieDetail() {
     });
 
     if (error) {
-      alert("Gagal mengirim ulasan: " + error.message);
+      showPopup("Gagal mengirim ulasan: " + error.message, "error");
     } else {
       fetchReviews();
-      alert("Ulasan berhasil tersimpan!");
+      showPopup("Ulasan berhasil tersimpan!", "success");
     }
   };
 
@@ -168,7 +180,7 @@ function MovieDetail() {
         });
       if (error) {
         console.error("Supabase Insert Error:", error);
-        alert(`Gagal menambahkan ke favorit.\nError: ${error.message}\n\nHint: Cek pengaturan RLS (Row Level Security) di tabel Anda.`);
+        showPopup(`Gagal menambahkan ke favorit.\nError: ${error.message}\n\nHint: Cek pengaturan RLS (Row Level Security) di tabel Anda.`, "error");
         setIsFavorite(false);
       }
     }
@@ -592,6 +604,7 @@ function MovieDetail() {
           </div>
         </div>
       </div>
+      <Popup isVisible={popupData.show} message={popupData.message} type={popupData.type} onClose={closePopup} />
     </div>
   );
 }

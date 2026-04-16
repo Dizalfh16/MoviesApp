@@ -14,16 +14,16 @@ const api = axios.create({
 });
 
 const getTrendingMovies = api.get("/trending/all/day");
-const getMovieByGenreId = (id) =>
-  api.get(`/discover/movie`, { params: { with_genres: id } });
+const getMovieByGenreId = (id, page = 1) =>
+  api.get(`/discover/movie`, { params: { with_genres: id, page } });
 
 const getMovieDetails = (id) => api.get(`/movie/${id}`);
 const getMovieCredits = (id) => api.get(`/movie/${id}/credits`);
 const getSimilarMovies = (id) => api.get(`/movie/${id}/similar`);
 const getMovieVideos = (id) => api.get(`/movie/${id}/videos`);
 
-const searchMovies = (query) =>
-  api.get(`/search/multi`, { params: { query } });
+const searchMovies = (query, page = 1) =>
+  api.get(`/search/multi`, { params: { query, page } });
 const getPopularMovies = (page = 1) =>
   api.get(`/movie/popular`, { params: { page } });
 const getTvSeries = (page = 1) =>
