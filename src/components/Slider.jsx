@@ -55,7 +55,7 @@ function Slider() {
   const currentMovie = movieList[activeIndex];
 
   return (
-    <div className="relative w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[500px] overflow-hidden group">
+    <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[85vh] overflow-hidden group">
       {/* Background Image with smooth transition */}
       {movieList.map((item, index) => (
         <div
@@ -67,20 +67,21 @@ function Slider() {
           <img
             src={IMAGE_BASE_URL + item.backdrop_path}
             alt={item.title || item.name}
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-cover object-center"
           />
         </div>
       ))}
 
       {/* Overlay Gradients */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#040714] via-[#040714]/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#040714]/80 via-transparent to-transparent h-32 md:h-40" />
       <div className="absolute inset-0 bg-gradient-to-r from-[#040714]/80 via-transparent to-transparent" />
 
       {/* Movie Info */}
       <div className="absolute bottom-8 md:bottom-12 left-6 md:left-16 right-6 md:right-1/3 z-10">
         <h2
           className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 md:mb-3 line-clamp-2 drop-shadow-lg cursor-pointer hover:text-blue-300 transition-colors"
-          onClick={() => navigate(`/movie/${currentMovie.id}`)}
+          onClick={() => navigate(`/${currentMovie.media_type === "tv" ? "tv" : "movie"}/${currentMovie.id}`)}
         >
           {currentMovie.title || currentMovie.name}
         </h2>
@@ -106,7 +107,7 @@ function Slider() {
 
         {/* CTA Button */}
         <button
-          onClick={() => navigate(`/movie/${currentMovie.id}`)}
+          onClick={() => navigate(`/${currentMovie.media_type === "tv" ? "tv" : "movie"}/${currentMovie.id}`)}
           className="flex items-center gap-2 bg-white hover:bg-gray-200 text-black px-5 md:px-7 py-2.5 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all duration-300 hover:scale-105 shadow-lg"
         >
           <HiPlayCircle className="text-xl md:text-2xl" />

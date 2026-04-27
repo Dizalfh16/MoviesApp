@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -18,15 +18,27 @@ import History from "./pages/History";
 import MyReviews from "./pages/MyReviews";
 import GenrePreferences from "./pages/GenrePreferences";
 
+function PageWrapper({ children }) {
+  const location = useLocation();
+  const isHeroPage = location.pathname === "/" || location.pathname.startsWith("/movie") || location.pathname.startsWith("/tv");
+  
+  return (
+    <div className={`flex-grow ${isHeroPage ? "" : "pt-[80px] md:pt-[100px]"}`}>
+      {children}
+    </div>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
         <Header />
-        <div className="pt-[72px] md:pt-[84px] flex-grow">
+        <PageWrapper>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
+            <Route path="/tv/:id" element={<MovieDetail />} />
             <Route path="/search" element={<Search />} />
             <Route path="/movies" element={<Movies />} />
             <Route path="/series" element={<Series />} />
@@ -40,7 +52,7 @@ function App() {
             <Route path="/reviews" element={<MyReviews />} />
             <Route path="/preferences" element={<GenrePreferences />} />
           </Routes>
-        </div>
+        </PageWrapper>
         <Footer />
       </div>
     </BrowserRouter>

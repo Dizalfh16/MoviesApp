@@ -6,6 +6,7 @@ import { HiArrowLeft, HiPlay, HiPlus, HiStar, HiCheck, HiHeart } from "react-ico
 import { useAuth } from "../components/AuthContext";
 import { supabase } from "../Services/supabaseClient";
 import Popup from "../components/Popup";
+import TrailerModal from "../components/TrailerModal";
 
 function MovieDetail() {
   const { id } = useParams();
@@ -22,6 +23,8 @@ function MovieDetail() {
   const [myReviewText, setMyReviewText] = useState("");
   const [myRating, setMyRating] = useState(0);
   const { user } = useAuth();
+
+  const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
   const [popupData, setPopupData] = useState({ show: false, message: "", type: "success" });
 
@@ -189,12 +192,13 @@ function MovieDetail() {
   const fetchMovieData = async () => {
     setLoading(true);
     try {
+      const mediaType = window.location.pathname.startsWith('/tv') ? 'tv' : 'movie';
       const [detailRes, creditsRes, similarRes, videosRes, reviewsRes] = await Promise.all([
-        GlobalApi.getMovieDetails(id),
-        GlobalApi.getMovieCredits(id),
-        GlobalApi.getSimilarMovies(id),
-        GlobalApi.getMovieVideos(id),
-        GlobalApi.getMovieReviews(id),
+        GlobalApi.getMediaDetails(mediaType, id),
+        GlobalApi.getMediaCredits(mediaType, id),
+        GlobalApi.getMediaSimilar(mediaType, id),
+        GlobalApi.getMediaVideos(mediaType, id),
+        GlobalApi.getMediaReviews(mediaType, id),
       ]);
       setMovie(detailRes.data);
       setCredits(creditsRes.data);
@@ -272,17 +276,18 @@ function MovieDetail() {
       <div className="relative w-full h-[50vh] md:h-[70vh]">
         <img
           src={IMAGE_BASE_URL + movie.backdrop_path}
-          alt={movie.title}
-          className="w-full h-full object-cover"
+          alt={movie.title || movie.name}
+          className="w-full h-full object-cover object-center"
         />
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#040714] via-[#040714]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#040714]/80 via-transparent to-transparent h-32 md:h-40" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#040714]/80 to-transparent" />
 
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-6 left-6 md:left-16 z-20 flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full hover:bg-black/80 transition-all duration-300 backdrop-blur-sm border border-white/10"
+          className="absolute top-20 md:top-24 left-6 md:left-16 z-20 flex items-center gap-2 px-4 py-2 bg-black/50 rounded-full hover:bg-black/80 transition-all duration-300 backdrop-blur-sm border border-white/10"
         >
           <HiArrowLeft className="text-lg" />
           <span className="text-sm font-medium">Kembali</span>
@@ -304,7 +309,7 @@ function MovieDetail() {
           {/* Details */}
           <div className="flex-1">
             <h1 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">
-              {movie.title}
+              {movie.title || movie.name}
             </h1>
 
             {/* Meta Info */}
@@ -314,9 +319,9 @@ function MovieDetail() {
                 {movie.vote_average?.toFixed(1)}
               </span>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-              <span>{movie.release_date?.split("-")[0]}</span>
+              <span>{(movie.release_date || movie.first_air_date)?.split("-")[0]}</span>
               <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-              <span>{movie.runtime} min</span>
+              <span>{movie.runtime ? `${movie.runtime} min` : (movie.number_of_seasons ? `${movie.number_of_seasons} Seasons` : '')}</span>
               {movie.adult && (
                 <>
                   <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
@@ -342,15 +347,13 @@ function MovieDetail() {
             {/* Action Buttons */}
             <div className="flex gap-3 mb-6">
               {trailer && (
-                <a
-                  href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => setIsTrailerOpen(true)}
                   className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-all duration-300 hover:scale-105"
                 >
                   <HiPlay className="text-xl" />
                   Tonton Trailer
-                </a>
+                </button>
               )}
               <button
                 onClick={toggleWatchlist}
@@ -460,7 +463,10 @@ function MovieDetail() {
               {similarMovies.map((item) => (
                 <div
                   key={item.id}
-                  onClick={() => navigate(`/movie/${item.id}`)}
+                  onClick={() => {
+                    const typePath = window.location.pathname.startsWith('/tv') ? 'tv' : 'movie';
+                    navigate(`/${item.media_type || typePath}/${item.id}`);
+                  }}
                   className="shrink-0 cursor-pointer hover:scale-105 transition-all duration-300"
                 >
                   <img
@@ -469,11 +475,11 @@ function MovieDetail() {
                         ? IMAGE_BASE_URL + item.poster_path
                         : ""
                     }
-                    alt={item.title}
+                    alt={item.title || item.name}
                     className="w-[130px] md:w-[180px] rounded-lg border-2 border-transparent hover:border-gray-400 transition-all duration-300"
                   />
                   <p className="text-sm mt-2 text-gray-300 w-[130px] md:w-[180px] truncate">
-                    {item.title}
+                    {item.title || item.name}
                   </p>
                 </div>
               ))}
@@ -605,6 +611,11 @@ function MovieDetail() {
         </div>
       </div>
       <Popup isVisible={popupData.show} message={popupData.message} type={popupData.type} onClose={closePopup} />
+      <TrailerModal 
+        isOpen={isTrailerOpen} 
+        onClose={() => setIsTrailerOpen(false)} 
+        trailerKey={trailer?.key} 
+      />
     </div>
   );
 }

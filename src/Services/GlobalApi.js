@@ -17,6 +17,12 @@ const getTrendingMovies = api.get("/trending/all/day");
 const getMovieByGenreId = (id, page = 1) =>
   api.get(`/discover/movie`, { params: { with_genres: id, page } });
 
+const getMediaDetails = (type, id) => api.get(`/${type}/${id}`);
+const getMediaCredits = (type, id) => api.get(`/${type}/${id}/credits`);
+const getMediaSimilar = (type, id) => api.get(`/${type}/${id}/similar`);
+const getMediaVideos = (type, id) => api.get(`/${type}/${id}/videos`);
+const getMediaReviews = (type, id) => api.get(`/${type}/${id}/reviews`);
+
 const getMovieDetails = (id) => api.get(`/movie/${id}`);
 const getMovieCredits = (id) => api.get(`/movie/${id}/credits`);
 const getSimilarMovies = (id) => api.get(`/movie/${id}/similar`);
@@ -38,6 +44,11 @@ const getMovieReviews = (id) => api.get(`/movie/${id}/reviews`);
 export default {
   getTrendingMovies,
   getMovieByGenreId,
+  getMediaDetails,
+  getMediaCredits,
+  getMediaSimilar,
+  getMediaVideos,
+  getMediaReviews,
   getMovieDetails,
   getMovieCredits,
   getSimilarMovies,
